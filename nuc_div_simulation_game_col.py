@@ -10,7 +10,7 @@ def color_sequence(sequence, highlight_indices):
     # Loop through the sequence and color specific letters
     for i, letter in enumerate(sequence):
         if i in highlight_indices:
-            colored_sequence += f"<span style='color:red;'>{letter}</span>"
+            colored_sequence += f"<span style='color:red;'>**{letter}**</span>"
         else:
             colored_sequence += f"<span style='color:black;'>{letter}</span>"
     
