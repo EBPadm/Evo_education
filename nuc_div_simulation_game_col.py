@@ -10,7 +10,7 @@ def color_sequence(sequence, highlight_indices):
     # Loop through the sequence and color specific letters
     for i, letter in enumerate(sequence):
         if i in highlight_indices:
-            colored_sequence += f"<span style='color:red;bold'>{letter}</span>"
+            colored_sequence += f"<span style='color:red;font-weight:bold;'>{letter}</span>"
         else:
             colored_sequence += f"<span style='color:black;'>{letter}</span>"
     
@@ -35,25 +35,33 @@ def all_mutation():
     for i, seq in enumerate(st.session_state.sequences):
         single_mutation(i)
 
+@st.dialog('種数の上限(14)に達しました')
+def error_dialog(): 
+    if st.button('OK'):
+        st.rerun()
+
 def speciation(id):
-    if(st.session_state.seqnum == 1):
-        ancestor = "MRCA"
-        offspring1 = "A"
-        offspring2 = "B"
+    if(st.session_state.seqnum == 14):
+        error_dialog()
     else:
+        if(st.session_state.seqnum == 1):
+            ancestor = "MRCA"
+            offspring1 = "A"
+            offspring2 = "B"
+        else:
+            last_id=len(st.session_state.seqnames)
+            ancestor = st.session_state.seqnames[id]
+            offspring1 = ancestor + alphabet_list[last_id*2-2]
+            offspring2 = ancestor + alphabet_list[last_id*2-1]
+        st.session_state.graph.edge(ancestor,offspring1)
+        st.session_state.graph.edge(ancestor,offspring2)
+        st.session_state.sequences.insert(id+1,st.session_state.sequences[id])
         last_id=len(st.session_state.seqnames)
-        ancestor = st.session_state.seqnames[id]
-        offspring1 = ancestor + alphabet_list[last_id*2-2]
-        offspring2 = ancestor + alphabet_list[last_id*2-1]
-    st.session_state.graph.edge(ancestor,offspring1)
-    st.session_state.graph.edge(ancestor,offspring2)
-    st.session_state.sequences.insert(id+1,st.session_state.sequences[id])
-    last_id=len(st.session_state.seqnames)
-    original_name = st.session_state.seqnames[id]
-    st.session_state.seqnames[id] = original_name + alphabet_list[last_id*2-2]
-    st.session_state.seqnames.insert(id+1,original_name + alphabet_list[last_id*2-1])
-    st.session_state.nucleotides.insert(id+1,st.session_state.nucleotides[id].copy())
-    st.session_state.seqnum += 1
+        original_name = st.session_state.seqnames[id]
+        st.session_state.seqnames[id] = original_name + alphabet_list[last_id*2-2]
+        st.session_state.seqnames.insert(id+1,original_name + alphabet_list[last_id*2-1])
+        st.session_state.nucleotides.insert(id+1,st.session_state.nucleotides[id].copy())
+        st.session_state.seqnum += 1
 
 def writing_fasta(output_space):
     outtext = ""
@@ -92,6 +100,7 @@ def game_process(seq_length):
         st.session_state.seqnames = ['']
         st.session_state.sequences = [''.join(random.choices('ATGC', k=seq_length))]
         st.session_state.nucleotides = [[]]
+        st.session_state.graph = graphviz.Digraph()
 
 seq_length = 300
 alphabet_list = [chr(i) for i in range(ord('A'), ord('Z') + 1)]
